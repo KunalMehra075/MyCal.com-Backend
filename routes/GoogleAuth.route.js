@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 require("dotenv").config();
 
-let HOST = "http://127.0.0.1:5500/MyCal.com-Frontend"
+let HOST = "https://mycal-704.netlify.app"
 
 require("../auth/google.auth")
 
