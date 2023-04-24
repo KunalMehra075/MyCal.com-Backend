@@ -7,7 +7,8 @@ const { EventRouter } = require("./routes/event.route.js");
 const { GoogleRouter } = require("./routes/GoogleAuth.route.js");
 const { userRouter } = require("./routes/user.route.js");
 const cookieSession = require("cookie-session")
-const passport = require("passport")
+const passport = require("passport");
+const { WorkFlowRouter } = require("./routes/workflow.route.js");
 require("dotenv").config();
 const app = express();
 
@@ -16,7 +17,7 @@ app.use(express.json());
 app.use(cors({
   origin: "https://mycal-704.netlify.app",
   mehtods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', "collection", "Authorization", "Access-Control-Allow-Credentials", "Access-Control-Allow-Origin"],
+  allowedHeaders: ['Content-Type', "UserEmail", "collection", "Authorization", "Access-Control-Allow-Credentials", "Access-Control-Allow-Origin"],
   credentials: true
 }));
 app.use(cookieSession({
@@ -32,6 +33,7 @@ app.use(passport.session())
 app.use("/google", GoogleRouter)
 app.use("/users", userRouter);
 app.use("/events", EventRouter);
+app.use("/workflow", WorkFlowRouter)
 
 app.get("/", (req, res) => {
   try {

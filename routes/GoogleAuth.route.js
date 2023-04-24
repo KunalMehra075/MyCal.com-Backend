@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken")
 require("dotenv").config();
 
 let HOST = "https://mycal-704.netlify.app"
+// let HOST = "http://127.0.0.1:5500"
 
 require("../auth/google.auth")
 

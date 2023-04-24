@@ -1,97 +1,83 @@
 const express = require("express");
-const mongoose = require("mongoose");
-
+const { EventModel } = require("../models/event.model");
+const { sendMail } = require("../config/mail");
+const { EventCreatedTemplate } = require("../config/emailtemplate");
+const { Usermodel } = require("../models/user.model");
 
 const EventRouter = express.Router()
-
 require("dotenv").config();
-let Dbmodel;
-let email;
 
-// Creating new user collection  step 2
-function MakeUserCollection(nameofcollection) {
-    email = nameofcollection;
-    let EventSchema = mongoose.Schema({
-        title: String,
-        discription: String,
-        startdate: String,
-        enddate: String,
-        starttime: String,
-        endtime: String,
-        email: String,
-    })
-    const DBCmodel = mongoose.model(nameofcollection, EventSchema);
-    Dbmodel = DBCmodel;
-    return;
-}
-// Creating new user collection step 1
-EventRouter.post("/register", (req, res) => {
-    let data = req.body;
 
-    if (email == data.email) {
-    } else {
-        let data = MakeUserCollection(data.email);
-        console.log("User Collection Created");
-        res.json({ Message: "Usercollection is created " + data });
-    }
-});
-// Creating new user collection step 1
 
-// new event creating
+//! CREATE NEW EVENT> ----------------------------------------------->
 EventRouter.post("/newevent", async (req, res) => {
-    let collection = req.headers.collection;
-    let data = req.body;
-    if (email == collection) {
-    } else {
-        MakeUserCollection(collection);
-    }
-    console.log(collection);
+    let email = req.body.userEmail
+    let startTime = req.body.start.split(/\T|\-|\:/).join("")
+    let endTime = req.body.end.split(/\T|\-|\:/).join("")
+    try {
+        let UserEvents = await EventModel.find({ userEmail: email })
+        let Possible = true
+        let PrevEvent = null
+        for (let event of UserEvents) {
+            let startX = +event.start.split(/\T|\-|\:/).join("")
+            let endX = +event.end.split(/\T|\-|\:/).join("")
 
-    let d = await Dbmodel.aggregate([
-        { $match: { startdate: data.startdate, starttime: data.starttime } },
-    ]);
-    console.log(data.startdate);
-
-    let m = await Dbmodel.aggregate([{ $match: { startdate: data.startdate } }]);
-
-    let c = 0;
-    for (let i = 0; i < m.length; i++) {
-        if (m[i].endtime >= data.starttime) {
-            c++;
+            if (startTime >= startX && endTime <= endX) {
+                Possible = false;
+                PrevEvent = event;
+                break;
+            } else if (startTime >= startX && startTime <= endX) {
+                Possible = false
+                PrevEvent = event;
+                break;
+            } else if (endTime >= startX && endTime <= endX) {
+                Possible = false
+                PrevEvent = event;
+                break;
+            }
         }
-    }
-    if (d.length > 0) {
-        res.json({ Message: "Time Slot Not Available", Created: false });
-    } else if (c > 0) {
-        res.json({ Message: "Time Slot Not Available", Created: false });
-    } else {
-        Dbmodel.insertMany([data]);
-        res.json({ Message: "New event added", Created: true });
+        if (Possible == false) {
+            res.json({ Message: "Event Cannot be Created, Overlapping Events", OverlappingEvent: PrevEvent, Created: false });
+        } else {
+            let instance = new EventModel(req.body)
+            await instance.save()
+            let userName = await Usermodel.findOne({ email })
+            let EmailBody = EventCreatedTemplate(instance, userName.name)
+            sendMail("Event has been created", EmailBody, email)
+            res.json({ Message: "Event Created Successfully", Created: true })
+        }
+    } catch (err) {
+        console.log(err);
+        res.json({ Error: err })
     }
 });
 
-// New event creating
+
+
+
+//! GET ALL EVENTS> ----------------------------------------------->
 
 EventRouter.get("/allevents", async (req, res) => {
-    let collection = req.headers.collection;
-    if (email == collection) {
-    } else {
-        MakeUserCollection(collection);
+    let userEmail = req.query.userEmail
+    try {
+        let AllEvents = await EventModel.find({ userEmail });
+        res.json({ Message: "Here are all the events", AllEvents });
+    } catch (error) {
+        console.log(error);
+        res.json({ Error: error })
     }
-    let data = await Dbmodel.find();
-    res.json({ Message: "Here are all the events", Data: data });
 });
 
-EventRouter.delete("/delete", async (req, res) => {
-    let data = req.body;
-    if (email == data.email) {
-    } else {
-        MakeUserCollection(data.email);
+//! DELETE AN EVENTS> ----------------------------------------------->
+EventRouter.delete("/delete/:id", async (req, res) => {
+    let id = req.params.id
+    try {
+        let Deleted = await EventModel.findOneAndDelete({ _id: id });
+        console.log("Deleted an event with id" + id);
+        res.json({ Message: "Deleted Successfully", Deleted });
+    } catch (error) {
+        res.json({ Error: error })
     }
-
-    let deleted = await Dbmodel.findOneAndDelete({ _id: data.id });
-    console.log("Deleted the event", deleted);
-    res.json({ Message: "Deleted", Deleted: deleted });
 });
 
 

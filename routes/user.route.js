@@ -49,7 +49,7 @@ userRouter.post("/login", async (req, res) => {
             { userID: user._id },
             process.env.refresh_key
           );
-          res.json({ Message: "Login succesfull", token, refresh_token, email, success: true });
+          res.json({ Message: "Login succesfull", token, refresh_token, name: user.name, email, success: true });
         } else {
           res.json({ Message: "Login failed", success: false });
         }
