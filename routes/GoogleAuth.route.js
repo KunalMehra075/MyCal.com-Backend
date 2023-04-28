@@ -3,7 +3,7 @@ const GoogleRouter = express.Router()
 const passport = require("passport");
 const { Usermodel } = require("../models/user.model");
 const bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken")
+// const jwt = require("jsonwebtoken")s
 require("dotenv").config();
 
 let HOST = "https://mycal-704.netlify.app"
