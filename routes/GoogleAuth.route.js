@@ -22,17 +22,14 @@ GoogleRouter.get('/callback',
 );
 // !GOOGLE AUTH SUCCESS
 GoogleRouter.get('/auth/google/success', async (req, res) => {
-    if (!req.user) {
-        return res.redirect('/google/auth/google/failure');
-    }
+    if (!req.user) { return res.redirect('/google/auth/google/failure'); }
     let googledata = {
         name: req.user.displayName,
         email: req.user.email,
         image: req.user.photos[0].value,
         password: req.user.email,
         role: "Explorer"
-    }
-    console.log(googledata);
+    }; console.log(googledata);
     try {
         let user1 = await Usermodel.find({ email: googledata.email });
         if (user1.length) {
@@ -43,43 +40,28 @@ GoogleRouter.get('/auth/google/success', async (req, res) => {
                 if (hash) {
                     googledata.password = hash;
                     const instance = new Usermodel(googledata);
-                    await instance.save();
-                    // console.log("NewCreated", instance)//!----> New User Created in DB by google
-                    res.redirect(`${HOST}/success.html?successId="${instance._id}"`)
+                    await instance.save();// console.log("NewCreated", instance)//!----> New User Created in DB by google
+                    res.redirect(`${HOST}/success.html?Auth=Google&successId="${instance._id}"`)
                 } else {
                     console.log(err);
-                    res.redirect(`${HOST}/failure.html?failure="${"ErrorInGoogleFound"}"`)
+                    res.redirect(`${HOST}/failure.html?Auth=Google&failure="${"ErrorInGoogleFound"}"`)
                 }
             });
         }
     } catch (error) {
         console.log(error);
-        res.redirect(`${HOST}/failure.html?failure="${"ErrorOccured"}"`)
+        res.redirect(`${HOST}/failure.html?Auth=Google&failure="${"ErrorOccured"}"`)
     }
 
 });
 
 // !GOOGLE AUTH FAILURE
 GoogleRouter.get('/auth/google/failure', (req, res) => {
-    res.redirect(`${HOST}/failure.html`)
+    res.redirect(`${HOST}/failure.html?Auth=Google&`)
 })
 
 
-// ?GOOGLE AUTH LOGIN
-GoogleRouter.post('/login', async (req, res) => {
-    let userID = req.body.userID
-    let user = await Usermodel.findOne({ _id: userID });
-    jwt.sign({ user }, process.env.key, (err, token) => {
-        if (token) {
-            res.json({
-                Message: "Google Login Successful",
-                Wrong: false, token, user,
-            });
-        } else {
-            res.json({ Message: "JWT error", Wrong: true });
-        }
-    });
-})
+
 // ! GOOGLE AUTH LOGOUT
 GoogleRouter.get('/logout', (req, res) => {
     req.session = null

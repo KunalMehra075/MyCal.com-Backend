@@ -4,11 +4,12 @@ require("dotenv").config();
 const { connection } = require("./config/db.js");
 
 const { EventRouter } = require("./routes/event.route.js");
-const { GoogleRouter } = require("./routes/GoogleAuth.route.js");
 const { userRouter } = require("./routes/user.route.js");
 const cookieSession = require("cookie-session")
 const passport = require("passport");
 const { WorkFlowRouter } = require("./routes/workflow.route.js");
+const { GoogleRouter } = require("./routes/GoogleAuth.route.js");
+const FacebookRouter = require("./routes/FacebookAuth.route.js");
 require("dotenv").config();
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(passport.session())
 
 // app.use(notifyBeforeRouter);
 app.use("/google", GoogleRouter)
+app.use("/facebook", FacebookRouter)
 app.use("/users", userRouter);
 app.use("/events", EventRouter);
 app.use("/workflow", WorkFlowRouter)
