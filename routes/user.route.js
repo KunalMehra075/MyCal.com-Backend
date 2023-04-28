@@ -63,7 +63,7 @@ userRouter.post("/login", async (req, res) => {
   }
 });
 //! GET USER BY ID
-userRouter.post('/:id', async (req, res) => {
+userRouter.get('/:id', async (req, res) => {
   let userID = req.params.id
   let user = await Usermodel.findOne({ _id: userID });
   jwt.sign({ user }, process.env.key, (err, token) => {

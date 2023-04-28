@@ -33,7 +33,7 @@ GoogleRouter.get('/auth/google/success', async (req, res) => {
     try {
         let user1 = await Usermodel.find({ email: googledata.email });
         if (user1.length) {
-            console.log("FoundInDB", user1[0])//!----> User Already Exists in DB  
+            // console.log("FoundInDB", user1[0])//!----> User Already Exists in DB  
             res.redirect(`${HOST}/success.html?Auth=Google&successId="${user1[0]._id}"`)
         } else {
             bcrypt.hash(googledata.password, 5, async function (err, hash) {
